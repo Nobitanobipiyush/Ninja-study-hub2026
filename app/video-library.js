@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 export default function VideoLibrary() {
-  const [videos, setVideos] = useState([]);
+  const [groups, setGroups] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -24,9 +24,9 @@ export default function VideoLibrary() {
         throw new Error(data.error || "Failed to load videos");
       }
 
-      setVideos(data.items || []);
-    } catch (e) {
-      setError(e.message);
+      setGroups(data.groups || []);
+    } catch (err) {
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -41,8 +41,10 @@ export default function VideoLibrary() {
       <header className="header">
         <div>
           <h1>
-            {process.env.NEXT_PUBLIC_SITE_TITLE || "My Video Library"}
+            {process.env.NEXT_PUBLIC_SITE_TITLE ||
+              "Ninja Study Hub"}
           </h1>
+
           <p>Bunny Stream + Vercel</p>
         </div>
 
@@ -75,49 +77,68 @@ export default function VideoLibrary() {
         </div>
       )}
 
-      {!loading && !error && (
-        <div className="grid">
-          {videos.map((video) => (
-            <button
-              className="card"
-              key={video.guid}
-              onClick={() => setSelected(video)}
-            >
-              <img
-                src={video.thumbnailUrl}
-                alt=""
-                loading="lazy"
-              />
+      {!loading &&
+        !error &&
+        groups.map((group) => (
+          <section
+            className="teacher-section"
+            key={group.id}
+          >
+            <h2>{group.name}</h2>
 
-              <div className="cardBody">
-                <h2>{video.title || "Untitled video"}</h2>
-                <span>{video.durationText}</span>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
+            <div className="video-grid">
+              {group.items.map((video) => (
+                <button
+                  className="video-card"
+                  key={video.guid}
+                  onClick={() => setSelected(video)}
+                >
+                  <div className="thumbnail-wrap">
+                    <img
+                      src={video.thumbnailUrl}
+                      alt={video.title}
+                      className="thumbnail"
+                      loading="lazy"
+                    />
+                  </div>
 
-      {!loading && !error && videos.length === 0 && (
-        <div className="status">
-          No videos found.
-        </div>
-      )}
+                  <div className="video-info">
+                    <h3>
+                      {video.title}
+                    </h3>
+
+                    <span>
+                      {video.durationText}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+        ))}
+
+      {!loading &&
+        !error &&
+        groups.length === 0 && (
+          <div className="status">
+            No videos found.
+          </div>
+        )}
 
       {selected && (
         <div
-          className="modal"
+          className="player-overlay"
           onClick={() => setSelected(null)}
         >
           <div
-            className="playerBox"
+            className="player-box"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               className="close"
               onClick={() => setSelected(null)}
             >
-              ×
+              ✕
             </button>
 
             <iframe
@@ -126,11 +147,9 @@ export default function VideoLibrary() {
               allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
               allowFullScreen
             />
-
-            <h2>{selected.title}</h2>
           </div>
         </div>
       )}
     </main>
   );
-}
+                }
